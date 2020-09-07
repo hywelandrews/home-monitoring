@@ -5,18 +5,20 @@ services:
     ports:
         - '8086:8086'
     volumes:
-        - influxdb-storage:/media/usb-disk/influxdb
+        - /media/usb-disk/influxdb:/influxdb-storage:rw
         - ./influxdb/provisioning/:/docker-entrypoint-initdb.d/
+        - ./influxdb/conf/influxdb.conf:/etc/influxdb/influxdb.conf:ro
     environment:
         - INFLUXDB_DB=monitoring
         - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
         - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+        - INFLUXDB_META_DIR=/influxdb-storage/meta
   grafana:
     image: grafana/grafana:7.1.5
     ports:
       - '3000:3000'
     volumes:
-      - grafana-storage:/media/usb-disk/grafana
+      - /media/usb-disk/grafana:/grafana-storage:rw
       - ./grafana/provisioning/:/etc/grafana/provisioning
     depends_on:
          - influxdb
@@ -26,10 +28,6 @@ services:
   telegraf:
     image: telegraf:1.15.2
     volumes:
-      - telegraf-storage:/media/usb-disk/telegraf
+      - /media/usb-disk/telegraf:/telegraf-storage
       - ./telegraf/conf/telegraf.conf:/etc/telegraf/telegraf.conf:ro 
       - /var/run/docker.sock:/var/run/docker.sock
-volumes:
-      telegraf-storage:
-      influxdb-storage:
-      grafana-storage:
